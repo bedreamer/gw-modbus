@@ -1,0 +1,37 @@
+{
+  "name": "恒温恒压控制器",
+  "model": "NH-100",
+  "vendor": "Newline",
+  "website": "",
+  "version": "v1.0",
+  "date": "2018-06-23",
+  "protocol": "MODBUS-RTU",
+
+  "temperature_control_register": -1,
+  "speed_control_register": -1,
+  "pressure_control_register": -1,
+
+  "registers": [
+    {
+      "name": "设定温度",
+      "address": 40001,
+      "model": "HoldingRegisters",
+      "unit": "℃",
+      "format": "S16Float"
+    },
+    {
+      "name": "设定压力",
+      "address": 40002,
+      "model": "HoldingRegisters",
+      "unit": "bar",
+      "format": "S16Float"
+    },
+    {
+      "name": "设定流速",
+      "address": 40003,
+      "model": "HoldingRegisters",
+      "unit": "L/min",
+      "format": "S16Float"
+    }
+  ]
+}
