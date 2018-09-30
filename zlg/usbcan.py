@@ -1,5 +1,4 @@
 # -*- coding: utf8 -*-
-from ctypes import *
 import api
 
 
@@ -106,32 +105,31 @@ class CANDevice:
         self.channel_list = [None for _ in range(self.device_driver.nr_channel)]
 
         # 设备句柄
-        self.c_device_handle = -1
+        self.device_handle = -1
 
     def open(self):
-        try:
-           self.c_device_handle = api.open_device(self.device_driver.model_type, self.device_order_numer, 0)
-        except Exception as e:
-            print(e)
-            return
+        self.device_handle = api.open_device(self.device_driver.model_type, self.device_order_numer)
 
-        if self.c_device_handle > 0:
+        if self.device_handle > 0:
             self.device_offline = False
 
     def close(self):
+        if self.device_handle <= 0:
+            return
+
         for channel in self.channel_list:
             if channel is None:
                 continue
             channel.close()
 
-        api.close_device(c_void_p(self.c_device_handle))
+        api.close_device(self.device_handle)
 
     def is_device_offline(self):
-        status = api.is_device_online(c_void_p(self.c_device_handle))
+        status = api.is_device_online(self.device_handle)
         return True if status == USBCAN.STATUS_OFFLINE else False
 
     def run_step_forward(self):
-        if self.device_offline is False:
+        if self.device_offline is True:
             self.open()
             return
 
