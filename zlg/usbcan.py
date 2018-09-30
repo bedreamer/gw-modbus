@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 from ctypes import *
-import _api
+import api
 
 
 class USBCAN(object):
@@ -110,7 +110,7 @@ class CANDevice:
 
     def open(self):
         try:
-           self.c_device_handle = _api.c_open_device(self.device_driver.model_type, self.device_order_numer, 0)
+           self.c_device_handle = api.open_device(self.device_driver.model_type, self.device_order_numer, 0)
         except Exception as e:
             print(e)
             return
@@ -124,10 +124,10 @@ class CANDevice:
                 continue
             channel.close()
 
-        _api.c_close_device(c_void_p(self.c_device_handle))
+        api.close_device(c_void_p(self.c_device_handle))
 
     def is_device_offline(self):
-        status = _api.c_is_device_online(c_void_p(self.c_device_handle))
+        status = api.is_device_online(c_void_p(self.c_device_handle))
         return True if status == USBCAN.STATUS_OFFLINE else False
 
     def run_step_forward(self):
