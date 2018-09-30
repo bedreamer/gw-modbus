@@ -1,8 +1,9 @@
 # -*- coding: utf8 -*-
 from ctypes import *
+import os
 
 # 动态库名称, 需要放在当前脚本目录
-_zlg_dll_file_name = 'driver/v0.00/zlgcan.dll'
+_zlg_dll_file_name = ''.join([os.path.dirname(__file__), 'driver/v0.00/zlgcan.dll'])
 
 # dll 句柄，由windll.LoadLibrary返回
 # 这里用cdll而不用windll的原因是函数声明方式不同

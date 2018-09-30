@@ -1,11 +1,9 @@
 # -*- coding: utf8 -*-
-import canframe
-
 # 使用2018-03-01 v0.00 的版本
 # import _api_v0_00 as _api
 
 # 使用2018-08-07 v3.13 的版本
-import _api_v3_13 as _api
+from zlg.usbcan import _api_v3_13 as _api
 
 
 def get_supported_bps_list():
@@ -14,6 +12,23 @@ def get_supported_bps_list():
     :return: string list
     """
     return _api.get_supported_bps_list()
+
+
+def get_supported_model_list():
+    """
+    获取支持的设备列表
+    :return: string list
+    """
+    return _api.get_supported_model_list()
+
+
+def get_device_driver(model_name):
+    """
+    获取指定设备的驱动
+    :param model_name: 设备型号名称
+    :return: 返回设备驱动类
+    """
+    return _api.get_usbcan_driver(model_name)
 
 
 def open_device(usbcan_device_type_number, device_order_number):

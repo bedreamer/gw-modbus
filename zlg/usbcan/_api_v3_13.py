@@ -1,13 +1,11 @@
 # -*- coding: utf8 -*-
-from ctypes import *
 import os
-import canframe
+from ctypes import *
+import zlg.can as can
 
-
-print(os.getcwd())
 
 # 动态库名称, 需要放在当前脚本目录
-_zlg_dll_file_name = 'driver/v3.13/ControlCAN.dll'
+_zlg_dll_file_name = ''.join([os.path.dirname(__file__), '/driver/v3.13/ControlCAN.dll'])
 
 # dll 句柄，由windll.LoadLibrary返回
 # 这里用cdll而不用windll的原因是函数声明方式不同
@@ -107,6 +105,53 @@ def get_supported_bps_list():
     return _bps_table.keys()
 
 
+class USBCAN_I_OR_I_PLUS(can.USBCAN):
+    model = 'USBCAN-I/I+'
+    model_type = 3
+    nr_channel = 2
+
+
+class USBCAN_II_OR_II_PLUS(can.USBCAN):
+    model_name = 'USBCAN-II/II+'
+    model_type = 4
+    nr_channel = 2
+
+
+class USBCAN_E_U(can.USBCAN):
+    model_name = 'USBCAN-E-U'
+    model_type = 20
+    nr_channel = 2
+
+
+class USBCAN_2E_U(can.USBCAN):
+    model_name = 'USBCAN-2E-U/CANalyst-II+'
+    model_type = 21
+    nr_channel = 2
+
+
+class USBCAN_4E_U(can.USBCAN):
+    model_name = 'USBCAN-4E-U'
+    model_type = 31
+    nr_channel = 2
+
+
+class USBCAN_8E_U(can.USBCAN):
+    model_name = 'USBCAN-8E-U'
+    model_type = 34
+    nr_channel = 2
+
+
+def get_supported_model_list():
+    return [Cls.model_name for Cls in can.USBCAN.__subclasses__()]
+
+
+def get_usbcan_driver(model_name):
+    for Cls in can.USBCAN.__subclasses__():
+        if model_name == Cls:
+            return Cls
+    raise NotImplementedError("Unsurported device model", model_name)
+
+
 def c_open_channel(device_handle, channel_number, bps, work_mode, acc_code, acc_mask):
     global _zlg_dll
     global _handle_counter
@@ -174,7 +219,7 @@ def c_get_frame(channel_handle, count, wait_ms):
     if read_count in (0xffffffff, -1, 0):
         return list()
 
-    return [canframe.CANFrame(id=obj.ID, tsp=obj.TimeStamp, data=obj.Data) for obj in buffer_list]
+    return [zlg.can.CANFrame(id=obj.ID, tsp=obj.TimeStamp, data=obj.Data) for obj in buffer_list]
 
 
 def c_send_frame(channel_handle, frames_list):
