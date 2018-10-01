@@ -3,7 +3,7 @@
 # import _api_v0_00 as _api
 
 # 使用2018-08-07 v3.13 的版本
-from zlg.usbcan import _api_v3_13 as _api
+from zlg.usbcan.v3_13 import _api
 
 
 def get_supported_bps_list():
