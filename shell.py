@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 
-def open_can_device(vendor, model, verion=None):
+def open_can_device(vendor, model, version=None):
     pass
 
 

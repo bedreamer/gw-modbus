@@ -71,7 +71,7 @@ def open_channel(device_handle, channel_number, bps, work_mode=None, acc_code=No
     :return: int, 返回通道句柄
     """
     if work_mode is None:
-        work_mode = 1
+        work_mode = 0
 
     if acc_code is None:
         acc_code = 0
@@ -142,3 +142,46 @@ def reset_channel(channel_handle):
     :return: bool
     """
     return _api.c_reset_channel(channel_handle)
+
+
+if __name__ == '__main__':
+    import frame
+    import time
+
+    driver = get_device_driver('USBCAN-2E-U')
+    device = open_device(driver.model_type, 0)
+    if device <= 0:
+        print("open device failed!")
+        exit(0)
+
+    print("device open successed, handle=", device)
+    channle = open_channel(device, 0, '100Kbps')
+    if channle <= 0:
+        print("channel openfailed!")
+    else:
+        frame = frame.CANFrame(0x01, 0, [1, 2, 3, 4, 5, 6])
+        print(send_frame(channle, [frame]))
+
+    total = 0
+    while True:
+        cache_count = get_cache_counter(channle)
+        if cache_count <= 0:
+            time.sleep(0.5)
+            continue
+
+        print("缓冲区剩余:", cache_count, "帧")
+        while cache_count > 0:
+            cache_count -= 1
+            frame_list = get_frame(channle, 1)
+            if len(frame_list) != 1:
+                break
+
+            frame = frame_list[0]
+            print("recv:", frame)
+            print("echo:", send_frame(channle, [frame]))
+            total += 1
+
+        if total >= 10:
+            break
+
+    close_device(device)
