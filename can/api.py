@@ -4,6 +4,7 @@
 
 # 使用2018-08-07 v3.13 的版本
 from zlg.usbcan.v3_13 import _api
+from zlg.usbcan.v3_13 import _products
 
 
 def get_supported_bps_list():
@@ -22,13 +23,13 @@ def get_supported_model_list():
     return _api.get_supported_model_list()
 
 
-def get_device_driver(model_name):
+def get_device_driver_by_model(model_name):
     """
     获取指定设备的驱动
     :param model_name: 设备型号名称
     :return: 返回设备驱动类
     """
-    return _api.get_usbcan_driver(model_name)
+    return _products.get_usbcan_driver_by_model(model_name)
 
 
 def open_device(usbcan_device_type_number, device_order_number):
@@ -139,7 +140,7 @@ def reset_channel(channel_handle):
     """
     复位通道
     :param channel_handle: 通道句柄
-    :return: bool
+    :return: new channel handle
     """
     return _api.c_reset_channel(channel_handle)
 
@@ -148,25 +149,74 @@ if __name__ == '__main__':
     import frame
     import time
 
-    driver = get_device_driver('USBCAN-2E-U')
-    device = open_device(driver.model_type, 0)
-    if device <= 0:
-        print("open device failed!")
-        exit(0)
+    model_list = get_supported_model_list()
+    print("支持的型号列表：")
+    print(model_list)
+
+    model = 'USBCAN-2E-U'
+
+    driver = get_device_driver_by_model(model)
+
+    while True:
+        device = open_device(driver.model_type, 0)
+        if device <= 0:
+            print("open device failed!")
+            time.sleep(5)
+            continue
+        break
 
     print("device open successed, handle=", device)
+    supported_bps = _products.get_supported_bps_list_by_handle(device)
+    print("supported bps by handle:", supported_bps)
+
     channle = open_channel(device, 0, '100Kbps')
     if channle <= 0:
         print("channel openfailed!")
-    else:
-        frame = frame.CANFrame(0x01, 0, [1, 2, 3, 4, 5, 6])
-        print(send_frame(channle, [frame]))
+        close_device(device)
+        exit(0)
+
+    print("channel open successed, handle=", channle)
+    frame = frame.CANFrame(0x01, 0, [0x00, 0x03, 0x00, 0x01, 0x00, 0x00])
+    print(send_frame(channle, [frame]))
 
     total = 0
     while True:
         cache_count = get_cache_counter(channle)
         if cache_count <= 0:
             time.sleep(0.5)
+            continue
+
+        print("缓冲区剩余:", cache_count, "帧")
+        while cache_count > 0:
+            if cache_count > 10:
+                recv_count = 10
+                cache_count -= recv_count
+            else:
+                recv_count = cache_count
+                cache_count -= recv_count
+
+            frame_list = get_frame(channle, recv_count)
+            if len(frame_list) == 0:
+                break
+
+            echo_list = list()
+            for frame in frame_list:
+                print("recv:", frame)
+                echo_list.append(frame)
+                total += 1
+
+            print("echo:", send_frame(channle, echo_list))
+
+        if total >= 10:
+            break
+
+    channle = reset_channel(channle)
+    print("复位通道: ", channle)
+    total = 0
+    while True:
+        cache_count = get_cache_counter(channle)
+        if cache_count <= 0:
+            #time.sleep(0.5)
             continue
 
         print("缓冲区剩余:", cache_count, "帧")

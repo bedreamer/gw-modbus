@@ -37,3 +37,13 @@ def test(h):
     global _handle_map
 
     return True if str(h) in _handle_map else False
+
+
+def find(payload):
+    global _handle_map
+
+    for key, value in _handle_map.items():
+        if value == payload:
+            return int(key)
+
+    return None
