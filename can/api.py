@@ -148,6 +148,7 @@ def reset_channel(channel_handle):
 if __name__ == '__main__':
     import frame
     import time
+    import signal
 
     model_list = get_supported_model_list()
     print("支持的型号列表：")
@@ -164,6 +165,12 @@ if __name__ == '__main__':
             time.sleep(5)
             continue
         break
+
+    def break_out(*args):
+        print("ctrl-c")
+        close_device(device)
+
+    signal.signal(signal.SIGINT, break_out)
 
     print("device open successed, handle=", device)
     supported_bps = _products.get_supported_bps_list_by_handle(device)
@@ -206,32 +213,5 @@ if __name__ == '__main__':
                 total += 1
 
             print("echo:", send_frame(channle, echo_list))
-
-        if total >= 10:
-            break
-
-    channle = reset_channel(channle)
-    print("复位通道: ", channle)
-    total = 0
-    while True:
-        cache_count = get_cache_counter(channle)
-        if cache_count <= 0:
-            #time.sleep(0.5)
-            continue
-
-        print("缓冲区剩余:", cache_count, "帧")
-        while cache_count > 0:
-            cache_count -= 1
-            frame_list = get_frame(channle, 1)
-            if len(frame_list) != 1:
-                break
-
-            frame = frame_list[0]
-            print("recv:", frame)
-            print("echo:", send_frame(channle, [frame]))
-            total += 1
-
-        if total >= 10:
-            break
 
     close_device(device)

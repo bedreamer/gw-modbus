@@ -126,7 +126,7 @@ def c_get_frame(channel_handle, count, wait_ms):
     if read_count in (0xffffffff, -1, 0):
         return list()
 
-    return [can.CANFrame(id=obj.ID, tsp=obj.TimeStamp, data=obj.Data) for obj in buffer_list]
+    return [can.CANFrame(id=obj.ID, tsp=obj.TimeStamp, data=obj.Data, size=obj.DataLen) for obj in buffer_list]
 
 
 def c_send_frame(channel_handle, frames_list):
@@ -141,7 +141,7 @@ def c_send_frame(channel_handle, frames_list):
         o.RemoteFlag = 0
         o.ExternFlag = 0
         o.DataLen = len(frame.data)
-        print(frame.data)
+
         if len(frame.data) < 8:
             frame.data.extend([0] * (8-len(frame.data)))
         elif len(frame.data) > 8:

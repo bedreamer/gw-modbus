@@ -2,12 +2,15 @@
 
 
 class CANFrame(object):
-    def __init__(self, id, tsp, data):
+    def __init__(self, id, tsp, data, size=None):
         self.id = id
         self.tsp = tsp
-        self.data = data
+        if isinstance(data, list) or isinstance(data, tuple):
+            self.data = data
+        else:
+            self.data = list(data)[: size]
 
     def __str__(self):
         data = " ".join(["%02X" % data for data in self.data])
         sid = "%08X:" % self.id
-        return "".join([sid, ' [', data, ']'])
+        return "".join([str(self.tsp), " ", sid, ' [', data, ']'])
