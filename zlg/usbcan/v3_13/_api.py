@@ -1,8 +1,6 @@
 # -*- coding: utf8 -*-
 import os
-from ctypes import *
-import can
-import handle
+from gateway import can
 
 # 导入当前接口中的全部结构体
 from ._types import _VCI_BOARD_INFO

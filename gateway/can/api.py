@@ -171,6 +171,8 @@ if __name__ == '__main__':
         close_device(device)
 
     signal.signal(signal.SIGINT, break_out)
+    signal.signal(signal.SIGTERM, break_out)
+    signal.signal(signal.SIGBREAK, break_out)
 
     print("device open successed, handle=", device)
     supported_bps = _products.get_supported_bps_list_by_handle(device)
