@@ -24,6 +24,24 @@ def get_device_driver_by_model(model_name):
     return _products.get_usbcan_driver_by_model(model_name)
 
 
+def get_device_bps_by_model(model_name):
+    """
+    获取指定型号设备支持的波特率
+    :param model_name: Éè±¸ÐÍºÅÃû³Æ
+    :return: ·µ»ØÉè±¸Çý¶¯Àà
+    """
+    return _products.get_supported_bps_list_by_model(model_name)
+
+
+def get_device_bps_by_device_handle(device_handle):
+    """
+    获取指定型号设备支持的波特率
+    :param model_name: Éè±¸ÐÍºÅÃû³Æ
+    :return: ·µ»ØÉè±¸Çý¶¯Àà
+    """
+    return _products.get_supported_bps_list_by_handle(device_handle)
+
+
 def open_device(usbcan_device_type_number, device_order_number):
     """
     打开USBCAN设备

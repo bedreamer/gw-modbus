@@ -57,7 +57,7 @@ def find(payload):
     global _handle_map
 
     for key, value in _handle_map.items():
-        if value == payload:
+        if value.args == payload.args:
             return int(key)
 
     return None
