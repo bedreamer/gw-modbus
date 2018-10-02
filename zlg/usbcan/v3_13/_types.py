@@ -37,3 +37,9 @@ class _VCI_CAN_OBJ(Structure):
                 ('DataLen', c_uint8),
                 ('Data', c_uint8 * 8),
                 ('Reserved', c_uint8 * 3)]
+
+
+class _VCI_ERR_INFO(Structure):
+    _fields_ = [('ErrCode', c_uint),
+                ('Passiv_ErrData', c_uint8 * 3),
+                ('ArLost_ErrData', c_uint8)]

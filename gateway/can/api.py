@@ -7,14 +7,6 @@ from zlg.usbcan.v3_13 import _api
 from zlg.usbcan.v3_13 import _products
 
 
-def get_supported_bps_list():
-    """
-    返回驱动支持的波特率列表
-    :return: string list
-    """
-    return _api.get_supported_bps_list()
-
-
 def get_supported_model_list():
     """
     获取支持的设备列表
@@ -190,6 +182,11 @@ if __name__ == '__main__':
 
     total = 0
     while True:
+        online = is_device_online(device)
+        if online is False:
+            print("device offline.")
+            break
+
         cache_count = get_cache_counter(channle)
         if cache_count <= 0:
             time.sleep(0.5)
@@ -215,5 +212,8 @@ if __name__ == '__main__':
                 total += 1
 
             print("echo:", send_frame(channle, echo_list))
+
+        if total >= 10:
+            break
 
     close_device(device)

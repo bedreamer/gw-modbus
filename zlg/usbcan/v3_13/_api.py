@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import os
 from gateway import can
-
+import handle
 # 导入当前接口中的全部结构体
 from ._types import _VCI_BOARD_INFO
 from ._types import _VCI_INIT_CONFIG
@@ -18,18 +18,32 @@ _zlg_dll_file_name = ''.join([os.path.dirname(__file__), '/driver/ControlCAN.dll
 _zlg_dll = windll.LoadLibrary(_zlg_dll_file_name)
 
 
+_token_name_can_device = "can device"
+_token_name_can_channel = "can device channel"
+
+
+class DeviceToken(handle.Token):
+    def __init__(self, *args):
+        super(self.__class__, self).__init__(_token_name_can_device, args)
+
+
+class ChannelToken(handle.Token):
+    def __init__(self, *args):
+        super(self.__class__, self).__init__(_token_name_can_channel, args)
+
+
 def c_open_device(devtype, devidx):
     global _zlg_dll
 
     # 避免重复打开设备
-    token = (devtype, devidx)
+    token = DeviceToken(devtype, devidx)
     exsits_handle = handle.find(token)
     if exsits_handle is not None:
         return exsits_handle
 
     status = _zlg_dll.VCI_OpenDevice(devtype, devidx, 0)
     if status == 1:
-        return handle.new(*token)
+        return handle.new(token)
     else:
         return 0
 
@@ -39,7 +53,7 @@ def is_device_online(device_handle):
 
     devtype, devidx = handle.get(device_handle)
     info = _VCI_BOARD_INFO()
-    status = _zlg_dll.VCI_ReadBoardInfo(devtype, devidx, POINTER(info))
+    status = _zlg_dll.VCI_ReadBoardInfo(devtype, devidx, pointer(info))
 
     return True if status == 1 else False
 
@@ -47,8 +61,24 @@ def is_device_online(device_handle):
 def c_close_device(device_handle):
     global _zlg_dll
 
+    # 关闭设备之前必须将关联的通道一并关闭, 做到资源主动回收
+    channel_close_list = list()
+    for ch, token in handle.all():
+        if token.name != _token_name_can_channel:
+            continue
+
+        _, _, _, _, _, h, _, _ = token.payload()[0]
+        if device_handle != h:
+            continue
+
+        channel_close_list.append(int(ch))
+
+    for channel_handle in channel_close_list:
+        handle.delete(channel_handle)
+
     devtype, devidx = handle.get(device_handle)
     handle.delete(device_handle)
+
     return True if 0 == _zlg_dll.VCI_CloseDevice(devtype, devidx) else False
 
 
@@ -58,7 +88,7 @@ def c_open_channel(device_handle, channel_number, bps, work_mode, acc_code, acc_
 
     devtype, devidx = handle.get(device_handle)
     # 避免重复打开设备
-    token = (devtype, devidx, channel_number, bps, work_mode, device_handle, acc_code, acc_mask)
+    token = ChannelToken(devtype, devidx, channel_number, bps, work_mode, device_handle, acc_code, acc_mask)
     exsits_handle = handle.find(token)
     if exsits_handle is not None:
         return exsits_handle
@@ -94,7 +124,7 @@ def c_open_channel(device_handle, channel_number, bps, work_mode, acc_code, acc_
     # 打开通道后先清空缓冲区
     _zlg_dll.VCI_ClearBuffer(devtype, devidx, channel_number)
 
-    return handle.new(*token)
+    return handle.new(token)
 
 
 def c_clear_cache(channel_handle):
