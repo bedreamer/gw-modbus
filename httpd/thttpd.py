@@ -57,7 +57,7 @@ class Httpd(SelectSocket.SelectSocketServer):
         for _, route in self.path_route.items():
             r = route['r_path']
             match_result = r.match(url)
-            print(match_result, "on", url)
+            #print(match_result, "on", url)
             if match_result in {None, False}:
                 continue
 

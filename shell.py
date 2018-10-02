@@ -19,8 +19,6 @@ if __name__ == '__main__':
     httpd.route("^/can/usbcan/channel/open/$", view.open_usbcan_channel)
     httpd.route("^/can/usbcan/channel/close/$", view.close_usbcan_channel)
 
-    httpd.route("^/device/$", view.get_supported_usbcan_list)
-
     while True:
         loop.run_step_forward()
         time.sleep(0.005)
